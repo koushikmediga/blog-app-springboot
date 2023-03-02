@@ -18,6 +18,8 @@ import com.koushik.blog.payloads.ApiResponse;
 import com.koushik.blog.payloads.UserDto;
 import com.koushik.blog.services.UserService;
 
+import jakarta.validation.Valid;
+
 @RestController
 @RequestMapping("/api/users")
 public class UserController {
@@ -26,14 +28,14 @@ public class UserController {
 	private UserService userService;
 	
 	@PostMapping("/")
-	public ResponseEntity<UserDto> createUser(@RequestBody UserDto userDto)
+	public ResponseEntity<UserDto> createUser(@Valid @RequestBody UserDto userDto)
 	{
 		UserDto createUserDto = this.userService.createUser(userDto);
 		return new ResponseEntity<>(createUserDto,HttpStatus.CREATED);
 	}
 	
 	@PutMapping("/{userId}")
-	public ResponseEntity<UserDto> updateUser(@RequestBody UserDto userDto, @PathVariable Integer userId){
+	public ResponseEntity<UserDto> updateUser(@Valid @RequestBody UserDto userDto, @PathVariable Integer userId){
 		UserDto updatedUser = this.userService.updatUser(userDto, userId);
 		return ResponseEntity.ok(updatedUser);
 	}
