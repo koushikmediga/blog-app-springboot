@@ -10,7 +10,8 @@ import com.koushik.blog.entities.User;
 
 public interface PostRepo extends JpaRepository<Post, Integer>{
 	
-	// the following are custom methods
+	// the following are custom methods we give, but even without their definition(implementation)
+	// they are working
 	List<Post> findByUser(User user);
 	List<Post> findByCategory(Category category);
 
