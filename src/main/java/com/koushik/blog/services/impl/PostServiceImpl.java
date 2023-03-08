@@ -56,27 +56,45 @@ public class PostServiceImpl implements PostService {
 	}
 
 	@Override
-	public Post updatePost(PostDto postDto, Integer postId) {
-		// TODO Auto-generated method stub
-		return null;
+	public PostDto updatePost(PostDto postDto, Integer postId) {
+		
+		Post post = this.postRepo.findById(postId)
+				.orElseThrow(() -> new ResourceNotFoundException("Post", "post id", postId));
+		
+		post.setTitle(postDto.getTitle());
+        post.setContent(postDto.getContent());
+        post.setImageName(postDto.getImageName());
+        
+        Post updatedPost = this.postRepo.save(post);
+		return this.modelMapper.map(updatedPost, PostDto.class);
 	}
 
 	@Override
 	public void deletePost(Integer postId) {
-		// TODO Auto-generated method stub
+
+		Post post = this.postRepo.findById(postId)
+				.orElseThrow(() -> new ResourceNotFoundException("Post", "post id", postId));
+
+		this.postRepo.delete(post);
 
 	}
 
 	@Override
-	public List<Post> getAllPosts() {
-		// TODO Auto-generated method stub
-		return null;
+	public List<PostDto> getAllPosts() {
+
+		List<Post> allPosts = this.postRepo.findAll();
+		List<PostDto> postsDtos = allPosts.stream().map((post) -> this.modelMapper.map(post, PostDto.class))
+				.collect(Collectors.toList());
+		return postsDtos;
 	}
 
 	@Override
-	public Post getPostById(Integer postId) {
-		// TODO Auto-generated method stub
-		return null;
+	public PostDto getPostById(Integer postId) {
+
+		Post post = this.postRepo.findById(postId)
+				.orElseThrow(() -> new ResourceNotFoundException("Post", "post id", postId));
+
+		return this.modelMapper.map(post, PostDto.class);
 	}
 
 	@Override
@@ -86,23 +104,25 @@ public class PostServiceImpl implements PostService {
 				.orElseThrow(() -> new ResourceNotFoundException("Category", "Category id", categoryId));
 		List<Post> posts = this.postRepo.findByCategory(cat);
 
-		List<PostDto> postsDtos = posts.stream().map((post) -> this.modelMapper.map(post, PostDto.class)).collect(Collectors.toList());
+		List<PostDto> postsDtos = posts.stream().map((post) -> this.modelMapper.map(post, PostDto.class))
+				.collect(Collectors.toList());
 
 		return postsDtos;
 	}
 
 	@Override
 	public List<PostDto> getPostsByUser(Integer userId) {
-		
+
 		User user = this.userRepo.findById(userId)
 				.orElseThrow(() -> new ResourceNotFoundException("User", "User id", userId));
-		
-		// we are calling this custom method, for which we didn't give any implementation
-		List<Post> posts = this.postRepo.findByUser(user);
-		
-		List<PostDto> postsDtos = posts.stream().map((post) -> this.modelMapper.map(post, PostDto.class)).collect(Collectors.toList());
 
-		
+		// we are calling this custom method, for which we didn't give any
+		// implementation
+		List<Post> posts = this.postRepo.findByUser(user);
+
+		List<PostDto> postsDtos = posts.stream().map((post) -> this.modelMapper.map(post, PostDto.class))
+				.collect(Collectors.toList());
+
 		return postsDtos;
 	}
 
