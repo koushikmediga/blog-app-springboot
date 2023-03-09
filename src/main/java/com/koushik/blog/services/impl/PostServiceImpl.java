@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import com.koushik.blog.entities.Category;
@@ -61,15 +62,15 @@ public class PostServiceImpl implements PostService {
 
 	@Override
 	public PostDto updatePost(PostDto postDto, Integer postId) {
-		
+
 		Post post = this.postRepo.findById(postId)
 				.orElseThrow(() -> new ResourceNotFoundException("Post", "post id", postId));
-		
+
 		post.setTitle(postDto.getTitle());
-        post.setContent(postDto.getContent());
-        post.setImageName(postDto.getImageName());
-        
-        Post updatedPost = this.postRepo.save(post);
+		post.setContent(postDto.getContent());
+		post.setImageName(postDto.getImageName());
+
+		Post updatedPost = this.postRepo.save(post);
 		return this.modelMapper.map(updatedPost, PostDto.class);
 	}
 
@@ -84,9 +85,15 @@ public class PostServiceImpl implements PostService {
 	}
 
 	@Override
-	public PostResponse getAllPosts(Integer pageNumber, Integer pageSize) {
+	public PostResponse getAllPosts(Integer pageNumber, Integer pageSize, String sortBy, String sortDir) {
 
-		Pageable p = PageRequest.of(pageNumber,pageSize);
+		Sort sort = null;
+		if(sortDir.equalsIgnoreCase("asc")) {
+			sort = Sort.by(sortBy).ascending();
+		}else {
+			sort = Sort.by(sortBy).descending();
+		}
+		Pageable p = PageRequest.of(pageNumber,pageSize, sort );
 		
 		// we get return as page , so assigning to it
 		Page<Post> pagePost = this.postRepo.findAll(p);
