@@ -88,24 +88,24 @@ public class PostServiceImpl implements PostService {
 	public PostResponse getAllPosts(Integer pageNumber, Integer pageSize, String sortBy, String sortDir) {
 
 		Sort sort = null;
-		if(sortDir.equalsIgnoreCase("asc")) {
+		if (sortDir.equalsIgnoreCase("asc")) {
 			sort = Sort.by(sortBy).ascending();
-		}else {
+		} else {
 			sort = Sort.by(sortBy).descending();
 		}
-		Pageable p = PageRequest.of(pageNumber,pageSize, sort );
-		
+		Pageable p = PageRequest.of(pageNumber, pageSize, sort);
+
 		// we get return as page , so assigning to it
 		Page<Post> pagePost = this.postRepo.findAll(p);
 		List<Post> allPosts = pagePost.getContent(); // using .getContent() to extract the content from page object
-		
+
 		List<PostDto> postsDtos = allPosts.stream().map((post) -> this.modelMapper.map(post, PostDto.class))
 				.collect(Collectors.toList());
-		
+
 		PostResponse postResponse = new PostResponse();
-		
+
 		postResponse.setContent(postsDtos);
-		postResponse.setPageNumber(pagePost.getNumber());//page post will have all the information about pagination
+		postResponse.setPageNumber(pagePost.getNumber());// page post will have all the information about pagination
 		postResponse.setPageSize(pagePost.getSize());
 		postResponse.setTotalElements(pagePost.getTotalElements());
 		postResponse.setTotalPages(pagePost.getTotalPages());
@@ -152,9 +152,21 @@ public class PostServiceImpl implements PostService {
 	}
 
 	@Override
-	public List<Post> searchPosts(String keyword) {
-		// TODO Auto-generated method stub
-		return null;
+	public List<PostDto> searchPosts(String keyword) {
+
+		List<Post> posts = this.postRepo.findByTitleContaining(keyword);
+		List<PostDto> postsDtos = posts.stream().map((post) -> this.modelMapper.map(post, PostDto.class))
+				.collect(Collectors.toList());
+		return postsDtos;
+	}
+	
+	@Override
+	public List<PostDto> searchPosts2(String keyword) {
+
+		List<Post> posts = this.postRepo.searchByTitle("%"+keyword+"%");
+		List<PostDto> postsDtos = posts.stream().map((post) -> this.modelMapper.map(post, PostDto.class))
+				.collect(Collectors.toList());
+		return postsDtos;
 	}
 
 }
