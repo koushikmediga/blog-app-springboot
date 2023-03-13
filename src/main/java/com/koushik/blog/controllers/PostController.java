@@ -1,12 +1,16 @@
 package com.koushik.blog.controllers;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.util.StreamUtils;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -26,6 +30,7 @@ import com.koushik.blog.payloads.PostResponse;
 import com.koushik.blog.services.FileService;
 import com.koushik.blog.services.PostService;
 
+import jakarta.servlet.http.HttpServletResponse;
 
 @RestController
 @RequestMapping("/api/")
@@ -34,10 +39,10 @@ public class PostController {
 	// autowired is compulsory otherwise we will get null pointer exception
 	@Autowired
 	private PostService postService;
-	
+
 	@Autowired
 	private FileService fileService;
-	
+
 	@Value("${project.image}")
 	private String path;
 
@@ -109,33 +114,42 @@ public class PostController {
 		return new ResponseEntity<List<PostDto>>(result, HttpStatus.OK);
 
 	}
-	
-	//search2
+
+	// search2
 	@GetMapping("/posts/search2/{keywords}")
 	public ResponseEntity<List<PostDto>> searchPostsByTitleCustom(@PathVariable("keywords") String keywords) {
 		List<PostDto> result = this.postService.searchPosts2(keywords);
 		return new ResponseEntity<List<PostDto>>(result, HttpStatus.OK);
 
 	}
-	
-	//post image upload
+
+	// post image upload
 	@PostMapping("/post/image/upload/{postId}")
-	public ResponseEntity<PostDto> uploadPostImage(
-			@RequestParam("image") MultipartFile image,
-			@PathVariable Integer postId
-			) throws IOException{
-		
-	    //throws ioexception will throw global exception error in caase of any error
-		
+	public ResponseEntity<PostDto> uploadPostImage(@RequestParam("image") MultipartFile image,
+			@PathVariable Integer postId) throws IOException {
+
+		// throws ioexception will throw global exception error in caase of any error
+
 		PostDto postDto = this.postService.getPostById(postId);
-		
+
 		// we are getting the filename in return
 		String fileName = this.fileService.uploadImage(path, image);
-		
+
 		postDto.setImageName(fileName);
-		PostDto updatedPost= this.postService.updatePost(postDto, postId);
+		PostDto updatedPost = this.postService.updatePost(postDto, postId);
 		return new ResponseEntity<PostDto>(updatedPost, HttpStatus.OK);
-		
+
+	}
+
+	// grab the image name from a post and ping the following url in browser, it will serve the uplaoded image
+	@GetMapping(value = "/post/image/{imageName}", produces = MediaType.IMAGE_JPEG_VALUE)
+	public void downloadImage(@PathVariable("imageName") String imageName, HttpServletResponse response)
+			throws IOException {
+
+		InputStream resource = this.fileService.getResource(path, imageName);
+		response.setContentType(MediaType.IMAGE_JPEG_VALUE);
+		StreamUtils.copy(resource, response.getOutputStream());
+
 	}
 
 }
